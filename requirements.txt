@@ -1,0 +1,29 @@
+python-telegram-bot[job-queue]==21.6
+# The two packages the [job-queue] extra pulls in, pinned explicitly.
+# pip silently skips extras when a matching python-telegram-bot version is
+# already present in a build cache, which is what produced the production
+# "No `JobQueue` set up" warning followed by
+# AttributeError: 'NoneType' object has no attribute 'run_repeating'.
+# Listing them as top-level requirements means JobQueue works even when the
+# extra is short-circuited by a cached layer.
+APScheduler==3.10.4
+pytz==2024.2
+SQLAlchemy==2.0.35
+requests==2.32.3
+python-dotenv==1.0.1
+Flask==3.0.3
+Flask-Session==0.8.0
+urllib3==2.2.3
+watchdog==6.0.0
+
+# Postgres driver — required for Supabase/Railway production deployment.
+psycopg2-binary==2.9.10
+
+# Provides the IANA timezone database for zoneinfo (used to compute "today"
+# for the TIMEZONE setting / admin Stats dashboard). Some minimal deployment
+# images don't ship a system tz database, so this makes it work everywhere.
+tzdata==2025.2
+
+# Production WSGI server for webhook_server.py (Flask's built-in dev server
+# is not meant to be run in production).
+gunicorn==23.0.0

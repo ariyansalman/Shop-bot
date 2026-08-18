@@ -1,0 +1,7 @@
+Android/data
+Android/obb
+.env
+.env.*
+__pycache__/
+.pytest_cache/
+*.pyc

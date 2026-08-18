@@ -1,0 +1,34 @@
+# Railway deployment config — https://docs.railway.com/reference/config-as-code
+#
+# This file is auto-detected by Railway at the repo root, so the BOT service
+# needs no manual "Config File Path" setup in the dashboard — just connect
+# the repo and Railway picks this up.
+#
+# startCommand runs render_service.py, which binds $PORT with a "/health"
+# endpoint (in a background thread) so Railway's HTTP health check passes,
+# then runs bot.py's existing main() / application.run_polling() in the main
+# thread exactly as before. Nothing about migrations, handlers or the
+# polling loop changes.
+#
+# The payment-gateway webhook receiver (webhook_server.py) needs its own
+# public HTTPS URL and its own $PORT. Deploy it as a SECOND Railway service
+# in the same project (same repo, same shared variables) and override its
+# Start Command directly in that service's Settings -> Deploy tab:
+#
+#   gunicorn webhook_server:app --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 60
+#
+# with Health Check Path set to /health there too. No second config file is
+# needed — a per-service Start Command override in the dashboard always
+# takes precedence over this file for that service.
+
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+startCommand = "python render_service.py"
+preDeployCommand = "python scripts/predeploy_migrate.py"
+healthcheckPath = "/health"
+healthcheckTimeout = 100
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+numReplicas = 1

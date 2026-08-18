@@ -1,0 +1,18 @@
+# Railway / Nixpacks build configuration (shared by both services).
+#
+#  1. Pinned install from requirements.txt. APScheduler + pytz are pinned as
+#     top-level requirements, so the [job-queue] extra can no longer be lost
+#     to a cached layer -- which means we can keep the pip cache and get fast
+#     incremental builds (no --force-reinstall / --no-cache-dir).
+#  2. postgresql client tools, so scripts/backup_db.py can run pg_dump.
+
+[phases.setup]
+nixPkgs = ["python311", "postgresql"]
+
+[phases.install]
+cmds = [
+  "python -m pip install --upgrade pip",
+  "python -m pip install -r requirements.txt",
+  # Fail the BUILD (not the running bot) if the JobQueue extra is missing.
+  "python -c \"import apscheduler, pytz; from telegram.ext import JobQueue; print('JobQueue dependencies OK')\"",
+]
